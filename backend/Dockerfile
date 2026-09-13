@@ -24,6 +24,13 @@ RUN set -eux; \
         zip \
     ;
 
+# The upstream image stamps cap_net_bind_service=ep onto the binary. Sandboxed PaaS runtimes
+# (Render, Cloud Run, ...) drop that capability from the container's bounding set, and the
+# kernel then refuses to exec a binary whose file capabilities it cannot grant:
+# "exec: frankenphp: Operation not permitted". We never need it: root binds :80 locally and
+# the hosted service listens on an unprivileged port.
+RUN setcap -r /usr/local/bin/frankenphp
+
 ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV PHP_INI_SCAN_DIR=":$PHP_INI_DIR/app.conf.d"
 
