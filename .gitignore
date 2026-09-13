@@ -1,0 +1,5 @@
+.env.local
+.env.*.local
+.DS_Store
+.idea/
+ai_docs/*

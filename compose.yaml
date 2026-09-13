@@ -1,0 +1,57 @@
+# Base stack. `docker compose up` also loads compose.override.yaml (development);
+# use `docker compose -f compose.yaml -f compose.prod.yaml up` for production.
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tetris}
+      POSTGRES_USER: ${POSTGRES_USER:-tetris}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-tetris}", "-U", "${POSTGRES_USER:-tetris}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    volumes:
+      # postgres:18 keeps PGDATA under /var/lib/postgresql/<major>/docker
+      - db_data:/var/lib/postgresql
+
+  backend:
+    build:
+      context: ./backend
+      target: prod
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: prod
+      APP_SECRET: ${APP_SECRET:?APP_SECRET is required}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tetris}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-tetris}?serverVersion=18&charset=utf8
+      # Plain HTTP on :80 — the frontend container is the only client.
+      SERVER_NAME: ":80"
+      # The frontend container (a Docker private-network peer) is the only proxy in front of us.
+      TRUSTED_PROXIES: 127.0.0.1,PRIVATE_SUBNETS
+      # Mercure: the Symfony app publishes to the hub embedded in its own Caddy server,
+      # and both sides read the same secret.
+      MERCURE_URL: http://localhost/.well-known/mercure
+      MERCURE_PUBLIC_URL: http://localhost:${HTTP_PORT:-8080}/.well-known/mercure
+      MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:?MERCURE_JWT_SECRET is required}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+    depends_on:
+      - backend
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:

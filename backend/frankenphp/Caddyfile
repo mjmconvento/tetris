@@ -1,0 +1,50 @@
+{
+	{$CADDY_GLOBAL_OPTIONS}
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+# SERVER_NAME=":80" serves plain HTTP; the frontend container proxies to us.
+{$SERVER_NAME:localhost} {
+	log {
+		{$CADDY_SERVER_LOG_OPTIONS}
+		# Redact the authorization query parameter that can be set by Mercure
+		format filter {
+			request>uri query {
+				replace authorization REDACTED
+			}
+		}
+	}
+
+	root /app/public
+	encode zstd br gzip
+
+	# Real-time hub, reachable at /.well-known/mercure
+	mercure {
+		# Bolt keeps a short history so reconnecting browsers catch up via Last-Event-ID
+		transport bolt {
+			path /data/mercure.db
+		}
+		# One secret, shared with the Symfony publisher (MercureBundle signs its JWTs with it). HS256.
+		publisher_jwt {env.MERCURE_JWT_SECRET}
+		subscriber_jwt {env.MERCURE_JWT_SECRET}
+		# The leaderboard topic is public: anyone may subscribe without a JWT
+		anonymous
+		# Extra directives
+		{$MERCURE_EXTRA_DIRECTIVES}
+	}
+
+	{$CADDY_SERVER_EXTRA_DIRECTIVES}
+
+	# Liveness for platform health checks: answered by Caddy, touches neither PHP nor the database.
+	respond /healthz 200
+
+	# Disable Topics tracking if not enabled explicitly: https://github.com/jkarlin/topics
+	header ?Permissions-Policy "browsing-topics=()"
+
+	php_server
+}

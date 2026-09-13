@@ -1,0 +1,38 @@
+# Render Blueprint: the Symfony API + embedded Mercure hub as one Docker web service.
+# See ai_docs/deployment.md. Postgres lives on Neon, the SPA on Cloudflare Workers.
+
+services:
+  - type: web
+    name: tetris-api
+    runtime: docker
+    plan: free
+    region: ohio # us-east-2: pick the same region for the Neon project
+    rootDir: backend # only commits touching backend/ trigger a deploy; paths below are relative to it
+    dockerfilePath: ./Dockerfile # its last stage is "prod", which is what a plain build produces
+    dockerContext: .
+    healthCheckPath: /healthz # answered by Caddy; keeps health checks from waking the database
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ENV
+        value: prod
+      - key: APP_SECRET
+        generateValue: true
+      - key: MERCURE_JWT_SECRET
+        generateValue: true
+      # Neon connection string (direct endpoint), with serverVersion=18&charset=utf8 appended.
+      - key: DATABASE_URL
+        sync: false
+      # Render routes traffic to $PORT; Caddy must listen there (plain HTTP, TLS terminates at Render).
+      - key: PORT
+        value: "10000"
+      - key: SERVER_NAME
+        value: ":10000"
+      # Symfony publishes to the hub inside its own container.
+      - key: MERCURE_URL
+        value: http://localhost:10000/.well-known/mercure
+      # Render's proxy sets X-Forwarded-*; its IPs rotate, so trust whichever peer connected.
+      - key: TRUSTED_PROXIES
+        value: 127.0.0.1,REMOTE_ADDR
+      # 512 MB instance: a handful of PHP threads is plenty for a demo.
+      - key: FRANKENPHP_CONFIG
+        value: num_threads 4

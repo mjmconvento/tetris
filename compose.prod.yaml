@@ -1,0 +1,12 @@
+# Production overrides: docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+# Terminate TLS in front of the "frontend" service (or replace its nginx with your edge proxy).
+
+services:
+  db:
+    restart: unless-stopped
+
+  backend:
+    restart: unless-stopped
+
+  frontend:
+    restart: unless-stopped

@@ -1,0 +1,14 @@
+**/*.log
+**/*.php~
+**/.git/
+**/.DS_Store
+**/Thumbs.db
+
+.env.*.local
+.env.local
+.env.local.php
+.phpunit.cache/
+phpunit.xml
+tests/
+var/
+vendor/

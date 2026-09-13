@@ -1,0 +1,19 @@
+// Cloudflare Workers config for the hosted SPA (see ai_docs/deployment.md).
+// API_ORIGIN is injected at deploy time: `npm run deploy` passes `--var API_ORIGIN:$API_ORIGIN`.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tetris-web",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // Unknown paths serve index.html (client-side routing)...
+    "not_found_handling": "single-page-application",
+    // ...except these, which the Worker proxies to the API before asset matching runs.
+    "run_worker_first": ["/api/*", "/.well-known/mercure*"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

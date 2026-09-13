@@ -1,0 +1,34 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+
+    # The frontend proxy (nginx / Vite dev server) sits in front of this app.
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-proto', 'x-forwarded-port']
+
+    # Sessions live in PostgreSQL (see services.yaml) so logins survive container restarts.
+    session:
+        handler_id: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+        cookie_secure: auto
+        cookie_samesite: lax
+        cookie_lifetime: 2592000 # 30 days
+        gc_maxlifetime: 2592000
+
+    rate_limiter:
+        register:
+            policy: sliding_window
+            limit: 5
+            interval: '10 minutes'
+        score_submit:
+            policy: sliding_window
+            limit: 30
+            interval: '1 minute'
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file
+        cache:
+            # In-memory pools: rate limiter counters must not leak between test runs.
+            app: cache.adapter.array

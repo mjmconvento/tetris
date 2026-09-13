@@ -1,0 +1,35 @@
+# Development overrides, loaded automatically by `docker compose up`.
+
+services:
+  db:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  backend:
+    build:
+      target: dev
+    environment:
+      APP_ENV: dev
+    volumes:
+      - ./backend:/app
+      - ./backend/frankenphp/Caddyfile:/etc/frankenphp/Caddyfile:ro
+    ports:
+      # Direct access to the API / Mercure hub, bypassing the frontend proxy.
+      - "${BACKEND_PORT:-8000}:80"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  frontend:
+    build:
+      target: dev
+    command: sh -c "npm install --no-fund --no-audit && npm run dev -- --host 0.0.0.0 --port 80"
+    environment:
+      # Vite dev server proxies /api and /.well-known/mercure here (see vite.config.ts).
+      API_PROXY_TARGET: http://backend
+    volumes:
+      - ./frontend:/app
+      # Linux-native binaries (esbuild/rolldown) must not be shared with the host's node_modules.
+      - frontend_node_modules:/app/node_modules
+
+volumes:
+  frontend_node_modules:
