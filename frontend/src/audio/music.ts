@@ -8,6 +8,9 @@
  * suspended, which freezes its clock so the tune resumes exactly where it stopped.
  */
 
+import { audioContext, heldSeconds } from './context'
+import { frequency } from './notes'
+
 /** The score's time unit is the eighth note; eight of them to a 4/4 bar. */
 const TEMPO_BPM = 144
 const EIGHTH_S = 30 / TEMPO_BPM
@@ -65,15 +68,6 @@ function bassline(chords: string): string {
 // The loop: the fast half twice, then the slow half.
 const MELODY = `${MELODY_A} ${MELODY_A} ${MELODY_B}`
 const BASS = `${bassline('E A E A D A E A')} ${bassline('E A E A D A E A')} ${bassline('A G A E A G A E')}`
-
-const SEMITONES: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }
-
-function frequency(name: string): number {
-  const note = /^([A-G])(#?)([0-8])$/.exec(name)
-  if (!note) throw new Error(`bad note "${name}"`)
-  const midi = (Number(note[3]) + 1) * 12 + SEMITONES[note[1]] + (note[2] ? 1 : 0)
-  return 440 * 2 ** ((midi - 69) / 12)
-}
 
 interface Note {
   /** Seconds from the top of the loop. */
@@ -192,11 +186,14 @@ class Music {
     const ctx = this.ctx
     if (!ctx || !this.master) return
     this.ramp(0)
-    // Freeze the clock only once the fade is out, or the last note is cut off mid-ring.
+    // Freeze the clock once the fade is out — but not while an effect is still ringing, or a
+    // clear that ended the game would be chopped off mid-sound.
+    const wait = Math.max(FADE_S + 0.04, heldSeconds())
+    clearTimeout(this.idle ?? undefined)
     this.idle = window.setTimeout(() => {
       this.idle = null
       void ctx.suspend().catch(() => {})
-    }, FADE_S * 1000 + 40)
+    }, wait * 1000)
   }
 
   private ramp(to: number): void {
@@ -213,8 +210,8 @@ class Music {
 
   private open(): AudioContext | null {
     if (this.ctx) return this.ctx
-    if (typeof AudioContext === 'undefined') return null
-    const ctx = new AudioContext()
+    const ctx = audioContext()
+    if (!ctx) return null
     const master = ctx.createGain()
     master.gain.value = 0
     master.connect(ctx.destination)

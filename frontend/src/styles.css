@@ -254,7 +254,7 @@ kbd {
   color: var(--text);
 }
 
-button.music-toggle {
+button.sound-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -264,12 +264,12 @@ button.music-toggle {
   color: var(--muted);
 }
 
-.music-toggle .state {
+.sound-toggle .state {
   font-weight: 700;
   color: var(--ok);
 }
 
-.music-toggle[aria-pressed='true'] .state {
+.sound-toggle[aria-pressed='true'] .state {
   color: var(--danger);
 }
 

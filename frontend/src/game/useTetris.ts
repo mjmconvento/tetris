@@ -102,11 +102,16 @@ export const BOARD_HEIGHT = VISIBLE_ROWS * BOARD_CELL
 export const PREVIEW_WIDTH = PREVIEW_BOX_COLS * PREVIEW_CELL
 export const PREVIEW_ROW_HEIGHT = PREVIEW_BOX_ROWS * PREVIEW_CELL
 
-export function useTetris(canvases: Canvases, onGameOver: (result: GameResult) => void) {
+export function useTetris(
+  canvases: Canvases,
+  onGameOver: (result: GameResult) => void,
+  onLineClear: (rows: number) => void,
+) {
   const [initial] = useState(() => createGame())
   const stateRef = useRef<GameState>(initial)
   const [hud, setHud] = useState<Hud>(() => hudOf(initial))
   const fireGameOver = useEffectEvent(onGameOver)
+  const fireLineClear = useEffectEvent(onLineClear)
 
   const startGame = useCallback(() => {
     stateRef.current = start(stateRef.current)
@@ -230,6 +235,9 @@ export function useTetris(canvases: Canvases, onGameOver: (result: GameResult) =
 
         const next = hudOf(s)
         if (!sameHud(next, lastHud)) {
+          // The engine is pure and reports no events: a jump in the line count is a clear,
+          // and by how much. A new game resets the count, which is a drop, not a clear.
+          if (next.lines > lastHud.lines) fireLineClear(next.lines - lastHud.lines)
           if (next.status === 'over' && lastHud.status !== 'over') {
             fireGameOver({ points: s.score, lines: s.lines, level: s.level })
           }

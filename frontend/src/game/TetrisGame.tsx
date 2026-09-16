@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, type ReactNode } from 'react'
-import { useMusic } from '../audio/useMusic'
+import { sfx } from '../audio/sfx'
+import { useAudio } from '../audio/useAudio'
 import { PREVIEW_COUNT } from './engine'
 import { BOARD_HEIGHT, BOARD_WIDTH, PREVIEW_ROW_HEIGHT, PREVIEW_WIDTH, useTetris, type GameResult } from './useTetris'
 
@@ -26,8 +27,8 @@ export function TetrisGame({ onGameOver, suspended, gameOverExtra }: Props) {
   const queueRef = useRef<HTMLCanvasElement>(null)
   const holdRef = useRef<HTMLCanvasElement>(null)
   const canvases = useMemo(() => ({ board: boardRef, queue: queueRef, hold: holdRef }), [])
-  const { hud, startGame, pause, resume } = useTetris(canvases, onGameOver)
-  const { muted, toggleMuted } = useMusic(hud.status)
+  const { hud, startGame, pause, resume } = useTetris(canvases, onGameOver, sfx.lineClear)
+  const { muted, toggleMuted } = useAudio(hud.status)
 
   useEffect(() => {
     if (suspended) pause()
@@ -102,12 +103,12 @@ export function TetrisGame({ onGameOver, suspended, gameOverExtra }: Props) {
 
         <button
           type="button"
-          className="ghost music-toggle"
+          className="ghost sound-toggle"
           aria-pressed={muted}
-          aria-label={muted ? 'Unmute music' : 'Mute music'}
+          aria-label={muted ? 'Unmute sound' : 'Mute sound'}
           onClick={(e) => (e.currentTarget.blur(), toggleMuted())}
         >
-          Music <span className="state">{muted ? 'off' : 'on'}</span> <kbd>M</kbd>
+          Sound <span className="state">{muted ? 'off' : 'on'}</span> <kbd>M</kbd>
         </button>
       </aside>
     </div>

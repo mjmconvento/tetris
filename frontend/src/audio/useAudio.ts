@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { GameStatus } from '../game/engine'
 import { music } from './music'
+import { sfx } from './sfx'
 
-const STORAGE_KEY = 'tetris:music'
+const STORAGE_KEY = 'tetris:sound'
 
 /**
- * Runs the background music alongside the game: it plays while a game is running, is silent
- * while muted, paused or over, and starts every new game from the first bar. The mute choice
- * is remembered across visits.
+ * Runs the game's audio: the background music plays while a game is running and is silent
+ * while muted, paused or over, every new game starting from the first bar. One mute covers
+ * the music and the line-clear effects alike, and is remembered across visits.
  */
-export function useMusic(status: GameStatus) {
+export function useAudio(status: GameStatus) {
   const [muted, setMuted] = useState(() => {
     try {
       return window.localStorage.getItem(STORAGE_KEY) === 'off'
@@ -20,6 +21,7 @@ export function useMusic(status: GameStatus) {
 
   useEffect(() => {
     music.setEnabled(!muted)
+    sfx.setEnabled(!muted)
     try {
       window.localStorage.setItem(STORAGE_KEY, muted ? 'off' : 'on')
     } catch {
