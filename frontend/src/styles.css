@@ -254,6 +254,25 @@ kbd {
   color: var(--text);
 }
 
+button.music-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.music-toggle .state {
+  font-weight: 700;
+  color: var(--ok);
+}
+
+.music-toggle[aria-pressed='true'] .state {
+  color: var(--danger);
+}
+
 /* Leaderboard */
 
 .leaderboard {
