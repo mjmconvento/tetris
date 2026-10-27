@@ -9,14 +9,14 @@ use App\Entity\User;
 use App\Repository\ScoreRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class Leaderboard
+final readonly class Leaderboard
 {
     public const int SIZE = 10;
 
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly ScoreRepository $scores,
-        private readonly LeaderboardPublisher $publisher,
+        private EntityManagerInterface $entityManager,
+        private ScoreRepository $scores,
+        private LeaderboardPublisher $publisher,
     ) {
     }
 

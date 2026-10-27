@@ -1,9 +1,9 @@
 #syntax=docker/dockerfile:1
 
-# Symfony on FrankenPHP (Caddy + PHP 8.4 + built-in Mercure hub).
+# Symfony on FrankenPHP (Caddy + PHP 8.5 + built-in Mercure hub).
 # Targets: "dev" (bind-mounted sources, php.ini-development) and "prod" (baked image).
 
-FROM dunglas/frankenphp:1-php8.4 AS base
+FROM dunglas/frankenphp:1-php8.5.12 AS base
 
 WORKDIR /app
 

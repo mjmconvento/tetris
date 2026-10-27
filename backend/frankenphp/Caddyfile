@@ -32,6 +32,9 @@
 		# One secret, shared with the Symfony publisher (MercureBundle signs its JWTs with it). HS256.
 		publisher_jwt {env.MERCURE_JWT_SECRET}
 		subscriber_jwt {env.MERCURE_JWT_SECRET}
+		# FrankenPHP >= 1.13 bundles a Mercure hub that only accepts publisher_jwt /
+		# subscriber_jwt in compatibility mode; opt in explicitly to keep this setup.
+		protocol_version_compatibility 8
 		# The leaderboard topic is public: anyone may subscribe without a JWT
 		anonymous
 		# Extra directives

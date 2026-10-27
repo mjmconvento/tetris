@@ -19,10 +19,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    /** Display form, exactly as typed at signup. */
-    #[ORM\Column(length: 20)]
-    private string $username;
-
     /** Lower-cased form; uniqueness and login lookups are case-insensitive. */
     #[ORM\Column(length: 20, unique: true)]
     private string $usernameCanonical;
@@ -33,10 +29,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
-    public function __construct(string $username)
-    {
-        $this->username = $username;
-        $this->usernameCanonical = self::canonicalize($username);
+    public function __construct(
+        /** Display form, exactly as typed at signup. */
+        #[ORM\Column(length: 20)]
+        private string $username,
+    ) {
+        $this->usernameCanonical = self::canonicalize($this->username);
         $this->createdAt = new \DateTimeImmutable();
     }
 

@@ -11,13 +11,13 @@ use Symfony\Component\Mercure\Update;
 /**
  * Pushes the full top list to every browser subscribed to the public "leaderboard" topic.
  */
-final class LeaderboardPublisher
+final readonly class LeaderboardPublisher
 {
     public const string TOPIC = 'leaderboard';
 
     public function __construct(
-        private readonly HubInterface $hub,
-        private readonly LoggerInterface $logger,
+        private HubInterface $hub,
+        private LoggerInterface $logger,
     ) {
     }
 

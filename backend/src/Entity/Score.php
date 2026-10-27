@@ -19,28 +19,20 @@ class Score
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private User $user;
-
-    #[ORM\Column]
-    private int $points;
-
-    #[ORM\Column]
-    private int $lines;
-
-    #[ORM\Column]
-    private int $level;
-
     #[ORM\Column(type: Types::DATETIMETZ_IMMUTABLE)]
     private \DateTimeImmutable $achievedAt;
 
-    public function __construct(User $user, int $points, int $lines, int $level)
-    {
-        $this->user = $user;
-        $this->points = $points;
-        $this->lines = $lines;
-        $this->level = $level;
+    public function __construct(
+        #[ORM\ManyToOne]
+        #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+        private User $user,
+        #[ORM\Column]
+        private int $points,
+        #[ORM\Column]
+        private int $lines,
+        #[ORM\Column]
+        private int $level,
+    ) {
         $this->achievedAt = new \DateTimeImmutable();
     }
 

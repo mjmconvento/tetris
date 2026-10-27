@@ -1,0 +1,71 @@
+# Dependabot version updates.
+# Dependabot is built into GitHub — this file is all that is needed to get
+# update pull requests. Security-only updates additionally require the
+# "Dependabot security updates" toggle in the repository settings.
+version: 2
+updates:
+  # Symfony API (backend/composer.json / composer.lock).
+  - package-ecosystem: composer
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      backend-runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+      backend-tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  # Vite SPA (frontend/package.json / package-lock.json).
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      frontend-runtime:
+        dependency-type: production
+        update-types: [minor, patch]
+      frontend-tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  # Base images in backend/Dockerfile (dunglas/frankenphp) and
+  # frontend/Dockerfile (node, nginx).
+  # "dunglas/frankenphp:1-php8.5.12" parses as version "1" + suffix
+  # "-php8.5.12"; Dependabot only offers tags with the identical suffix, so it
+  # never proposes PHP patch bumps (8.5.13+). Bump that tag by hand.
+  - package-ecosystem: docker
+    directories:
+      - /backend
+      - /frontend
+    schedule:
+      interval: monthly
+    ignore:
+      # Skip odd-numbered Node lines: they go end-of-life six months after
+      # release. Even majors are LTS and should still be offered.
+      - dependency-name: node
+        versions: ["25.x", "27.x"]
+    groups:
+      base-images:
+        patterns: ["*"]
+        update-types: [minor, patch]
+
+  # Service images in compose*.yaml (postgres).
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: monthly
+    ignore:
+      # A postgres major refuses to start against the existing db_data volume
+      # (needs pg_dump/pg_upgrade), so majors are a manual operation.
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
+    groups:
+      service-images:
+        patterns: ["*"]
+        update-types: [minor, patch]
