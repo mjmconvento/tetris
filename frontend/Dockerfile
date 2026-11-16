@@ -3,7 +3,7 @@
 # Targets: "dev" (Vite dev server, sources bind-mounted by compose.override.yaml)
 # and "prod" (static build served by nginx, which also proxies /api and Mercure).
 
-FROM node:24-alpine AS base
+FROM node:26-alpine AS base
 WORKDIR /app
 
 

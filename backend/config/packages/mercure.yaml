@@ -3,6 +3,8 @@ mercure:
         default:
             url: '%env(default::MERCURE_URL)%'
             public_url: '%env(default::MERCURE_PUBLIC_URL)%'
+            # The FrankenPHP hub runs in protocol_version_compatibility 8 (0.x); mercure-bundle >= 0.6 defaults to 1.0.
+            protocol_version: '0.x'
             jwt:
                 secret: '%env(MERCURE_JWT_SECRET)%'
                 publish: '*'
