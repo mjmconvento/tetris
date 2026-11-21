@@ -3,3 +3,8 @@
 .DS_Store
 .idea/
 ai_docs/*
+
+###> claude code ###
+/.claude/settings.local.json
+/.claude/hooks/__pycache__/
+###< claude code ###
